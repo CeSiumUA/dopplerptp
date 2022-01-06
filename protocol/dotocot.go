@@ -1,11 +1,14 @@
 package protocol
 
 import (
+	"bytes"
 	"crypto"
 	"encoding/binary"
 )
 
 const Version = 1
+const publicKeyLength = 32
+const hashLength = 64
 
 type Dotocot struct {
 	Version        byte
@@ -52,4 +55,35 @@ func (dtct *Dotocot) Serialize() *[]byte {
 	copy(resultBytes[hashStart:hashStart+hashLength], packageHash)
 
 	return &resultBytes
+}
+
+func (dtct *Dotocot) Deserialize(rawData []byte) error {
+	index := 0
+	dtct.Version = rawData[0]
+	index++
+
+	dtct.Sender = rawData[index : index+publicKeyLength]
+	index += publicKeyLength
+
+	dtct.TargetConsumer = rawData[index : index+publicKeyLength]
+	index += publicKeyLength
+
+	dtct.Hash = rawData[index : index+hashLength]
+	index += hashLength
+
+	dtct.PayloadType = rawData[index]
+	index++
+
+	payLoadSize := rawData[index : index+8]
+	index += 8
+	buffer := bytes.NewBuffer(payLoadSize)
+	payLoadLength, err := binary.ReadUvarint(buffer)
+	if err != nil {
+		return err
+	}
+	dtct.PayloadLength = payLoadLength
+
+	dtct.Payload = rawData[index:]
+
+	return nil
 }
