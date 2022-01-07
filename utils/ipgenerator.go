@@ -8,7 +8,7 @@ import (
 func GeneratePublicIPs(count int32) []string {
 	publicAddresses := make([]string, count)
 
-	for i, _ := range publicAddresses {
+	for i := range publicAddresses {
 		for {
 			p, q, r, s := generateRandomAddress()
 			if checkPublicAddressIsValid(p, q, r, s) {
