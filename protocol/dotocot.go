@@ -2,7 +2,7 @@ package protocol
 
 import (
 	"bytes"
-	"crypto"
+	"crypto/sha512"
 	"encoding/binary"
 )
 
@@ -38,8 +38,7 @@ func (dtct *Dotocot) Serialize() *[]byte {
 	index += consumerLength
 
 	hashLength := len(dtct.Hash)
-	hashStart := index
-	copy(resultBytes[hashStart:hashStart+hashLength], dtct.Hash)
+	copy(resultBytes[index:index+hashLength], dtct.Hash)
 	index += hashLength
 
 	resultBytes[index] = dtct.PayloadType
@@ -50,9 +49,6 @@ func (dtct *Dotocot) Serialize() *[]byte {
 
 	payLoadLength := len(dtct.Payload)
 	copy(resultBytes[index:index+payLoadLength], dtct.Payload)
-
-	packageHash := crypto.SHA512.New().Sum(resultBytes)
-	copy(resultBytes[hashStart:hashStart+hashLength], packageHash)
 
 	return &resultBytes
 }
@@ -86,4 +82,26 @@ func (dtct *Dotocot) Deserialize(rawData []byte) error {
 	dtct.Payload = rawData[index:]
 
 	return nil
+}
+
+func CreateDotocotProtocolMessage(sender, targetConsumer, payload []byte, payloadType byte) *Dotocot {
+	hashedBytes := sender
+	hashedBytes = append(hashedBytes, targetConsumer...)
+	hashedBytes = append(hashedBytes, payload...)
+	hashedBytes = append(hashedBytes, payloadType)
+
+	hasher512 := sha512.New()
+	hasher512.Write(hashedBytes)
+	hash := hasher512.Sum(nil)
+
+	dotocot := Dotocot{
+		Version:        Version,
+		Sender:         sender,
+		TargetConsumer: targetConsumer,
+		PayloadLength:  uint64(len(payload)),
+		Payload:        payload,
+		PayloadType:    payloadType,
+		Hash:           hash,
+	}
+	return &dotocot
 }

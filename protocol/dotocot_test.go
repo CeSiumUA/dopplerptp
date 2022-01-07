@@ -48,6 +48,14 @@ func TestSerializeDeserialize(t *testing.T) {
 	}
 }
 
+func TestCreatePackage(t *testing.T) {
+	sender := []byte{1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4}
+	consumer := []byte{5, 6, 7, 8, 5, 6, 7, 8, 5, 6, 7, 8, 5, 6, 7, 8, 5, 6, 7, 8, 5, 6, 7, 8, 5, 6, 7, 8, 5, 6, 7, 8}
+	payload := make([]byte, 40)
+	rand.Read(payload)
+	CreateDotocotProtocolMessage(sender, consumer, payload, 1)
+}
+
 func BenchmarkSerialize(b *testing.B) {
 	for x := 0; x < 10; x++ {
 		protocol := createDotocotPackage(int32(b.N))
