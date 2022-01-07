@@ -2,35 +2,21 @@ package protocol
 
 import (
 	"crypto/sha512"
+	"math/rand"
 	"testing"
 )
 
+var basePackageSize int32 = 138
+
 func TestSerializeDeserialize(t *testing.T) {
-	sender := []byte{1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4}
-	consumer := []byte{5, 6, 7, 8, 5, 6, 7, 8, 5, 6, 7, 8, 5, 6, 7, 8, 5, 6, 7, 8, 5, 6, 7, 8, 5, 6, 7, 8, 5, 6, 7, 8}
-	payload := []byte{9, 10, 11, 12}
-	resultArray := append(sender, consumer...)
-	resultArray = append(resultArray, payload...)
 
-	hasher := sha512.New()
+	var payloadSize int32 = 4
 
-	hasher.Write(resultArray)
-
-	hash := hasher.Sum(nil)
-
-	dotocotMessage := Dotocot{
-		Version:        Version,
-		Sender:         sender,
-		TargetConsumer: consumer,
-		PayloadType:    1,
-		Payload:        payload,
-		Hash:           hash,
-		PayloadLength:  4,
-	}
+	dotocotMessage := createDotocotPackage(payloadSize)
 
 	serializedBytes := dotocotMessage.Serialize()
 
-	if len(*serializedBytes) != 142 {
+	if int32(len(*serializedBytes)) != (basePackageSize + payloadSize) {
 		t.Errorf("invalid array length, expected %d got %d", 142, len(*serializedBytes))
 	}
 
@@ -60,4 +46,37 @@ func TestSerializeDeserialize(t *testing.T) {
 	if string(deserialized.Payload) != string(dotocotMessage.Payload) {
 		t.Errorf("incorrect payload, expected %s got %s", string(dotocotMessage.Payload), string(deserialized.Payload))
 	}
+}
+
+func BenchmarkSerialize(b *testing.B) {
+	for x := 0; x < 10; x++ {
+		protocol := createDotocotPackage(int32(b.N))
+		protocol.Serialize()
+	}
+}
+
+func createDotocotPackage(payloadLength int32) *Dotocot {
+	sender := []byte{1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4}
+	consumer := []byte{5, 6, 7, 8, 5, 6, 7, 8, 5, 6, 7, 8, 5, 6, 7, 8, 5, 6, 7, 8, 5, 6, 7, 8, 5, 6, 7, 8, 5, 6, 7, 8}
+	payload := make([]byte, payloadLength)
+	rand.Read(payload)
+	resultArray := append(sender, consumer...)
+	resultArray = append(resultArray, payload...)
+
+	hasher := sha512.New()
+
+	hasher.Write(resultArray)
+
+	hash := hasher.Sum(nil)
+
+	dotocotMessage := Dotocot{
+		Version:        Version,
+		Sender:         sender,
+		TargetConsumer: consumer,
+		PayloadType:    1,
+		Payload:        payload,
+		Hash:           hash,
+		PayloadLength:  4,
+	}
+	return &dotocotMessage
 }
