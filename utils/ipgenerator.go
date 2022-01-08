@@ -5,6 +5,14 @@ import (
 	"math/rand"
 )
 
+type PublicAddressProvider struct {
+	SupportedPublicIpCount int32
+}
+
+func (public *PublicAddressProvider) GetAddresses() ([]string, error) {
+	return GeneratePublicIPs(public.SupportedPublicIpCount), nil
+}
+
 func GeneratePublicIPs(count int32) []string {
 	publicAddresses := make([]string, count)
 

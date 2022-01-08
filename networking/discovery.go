@@ -8,6 +8,9 @@ import (
 	"github.com/tatsushid/go-fastping"
 )
 
+type LocalAdressProvider struct {
+}
+
 func GetLocalNetworkAddresses() ([]string, error) {
 	baseAddress := "192.168.0."
 	number := 2
@@ -33,4 +36,8 @@ func GetLocalNetworkAddresses() ([]string, error) {
 	err := pinger.Run()
 
 	return actualAddresses, err
+}
+
+func (local *LocalAdressProvider) GetAddresses() ([]string, error) {
+	return GetLocalNetworkAddresses()
 }
