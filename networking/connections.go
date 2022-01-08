@@ -1,3 +1,3 @@
 package networking
 
-var connections []Connection
+var connections []*Connection

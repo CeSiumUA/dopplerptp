@@ -1,4 +1,4 @@
-package utils
+package settings
 
 type SettingsProvider interface {
 	GetNodeAddresses() []string
