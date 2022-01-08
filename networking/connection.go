@@ -19,7 +19,7 @@ func (cn *Connection) PerformHandshake() error {
 		return err
 	}
 	readBuffer := make([]byte, 8192)
-	read, err := conn.Read(readBuffer)
+	read, err := (*cn.Connection).Read(readBuffer)
 	if err != nil {
 		return err
 	}
