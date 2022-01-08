@@ -48,6 +48,21 @@ func TestSerializeDeserialize(t *testing.T) {
 	}
 }
 
+func TestVerify(t *testing.T) {
+	dtct := Dotocot{}
+	rawBytes := make([]byte, 100)
+	isValid := dtct.Verify(rawBytes)
+
+	if isValid {
+		t.Errorf("in this test case, package is invalid")
+	}
+
+	err := dtct.Deserialize(rawBytes)
+	if err == nil {
+		t.Errorf("no error invoked on invalid package")
+	}
+}
+
 func TestCreatePackage(t *testing.T) {
 	sender := []byte{1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4}
 	consumer := []byte{5, 6, 7, 8, 5, 6, 7, 8, 5, 6, 7, 8, 5, 6, 7, 8, 5, 6, 7, 8, 5, 6, 7, 8, 5, 6, 7, 8, 5, 6, 7, 8}

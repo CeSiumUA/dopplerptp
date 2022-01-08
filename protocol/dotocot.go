@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"crypto/sha512"
 	"encoding/binary"
+	"fmt"
 )
 
 const Version = 1
@@ -54,6 +55,13 @@ func (dtct *Dotocot) Serialize() *[]byte {
 }
 
 func (dtct *Dotocot) Deserialize(rawData []byte) error {
+
+	isPackageValid := dtct.Verify(rawData)
+
+	if !isPackageValid {
+		return fmt.Errorf("package is not valid")
+	}
+
 	index := 0
 	dtct.Version = rawData[0]
 	index++
@@ -81,7 +89,28 @@ func (dtct *Dotocot) Deserialize(rawData []byte) error {
 
 	dtct.Payload = rawData[index:]
 
+	hashedBytes := dtct.Sender
+	hashedBytes = append(hashedBytes, dtct.TargetConsumer...)
+	hashedBytes = append(hashedBytes, dtct.Payload...)
+	hashedBytes = append(hashedBytes, dtct.PayloadType)
+
+	verifyHasher := sha512.New()
+	verifyHasher.Write(hashedBytes)
+	hash := verifyHasher.Sum(nil)
+
+	hashCompareResult := bytes.Compare(dtct.Hash, hash)
+
+	if hashCompareResult != 0 {
+		return fmt.Errorf("hash is not valid")
+	}
+
 	return nil
+}
+
+func (dtct *Dotocot) Verify(rawData []byte) bool {
+	minimalPackageLength := 1 + (2 * publicKeyLength) + (hashLength) + 1 + 1 + 1
+	atualPackageLength := len(rawData)
+	return atualPackageLength >= minimalPackageLength
 }
 
 func CreateDotocotProtocolMessage(sender, targetConsumer, payload []byte, payloadType byte) *Dotocot {
