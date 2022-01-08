@@ -134,3 +134,38 @@ func CreateDotocotProtocolMessage(sender, targetConsumer, payload []byte, payloa
 	}
 	return &dotocot
 }
+
+func CreateDotocotHandshakeMessage(sender []byte, address string) *Dotocot {
+	payload := []byte(address)
+	payloadLength := len(payload)
+
+	targetConsumer := make([]byte, publicKeyLength)
+	payloadType := HANDSHAKE
+
+	bytesToHash := make([]byte, 2*publicKeyLength+payloadLength+1)
+
+	index := 0
+	copy(bytesToHash[index:publicKeyLength], sender)
+	index += publicKeyLength
+	copy(bytesToHash[index:publicKeyLength], targetConsumer)
+	index += publicKeyLength
+	copy(bytesToHash[index:payloadLength], payload)
+	index += payloadLength
+	copy(bytesToHash[index:1], []byte{payloadType})
+
+	hasher512 := sha512.New()
+	hasher512.Write(bytesToHash)
+	hash := hasher512.Sum(nil)
+
+	dotocot := Dotocot{
+		Version:        Version,
+		Sender:         sender,
+		TargetConsumer: targetConsumer,
+		Payload:        payload,
+		PayloadLength:  uint64(len(payload)),
+		PayloadType:    payloadType,
+		Hash:           hash,
+	}
+
+	return &dotocot
+}

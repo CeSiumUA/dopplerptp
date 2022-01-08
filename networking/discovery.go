@@ -8,7 +8,7 @@ import (
 	"github.com/tatsushid/go-fastping"
 )
 
-type LocalAdressProvider struct {
+type LocalAddressProvider struct {
 }
 
 func GetLocalNetworkAddresses() ([]string, error) {
@@ -38,6 +38,6 @@ func GetLocalNetworkAddresses() ([]string, error) {
 	return actualAddresses, err
 }
 
-func (local *LocalAdressProvider) GetAddresses() ([]string, error) {
+func (local *LocalAddressProvider) GetAddresses() ([]string, error) {
 	return GetLocalNetworkAddresses()
 }
