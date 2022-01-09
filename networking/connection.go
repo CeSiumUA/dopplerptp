@@ -10,7 +10,8 @@ import (
 )
 
 type Connection struct {
-	Connection *net.Conn
+	Connection        *net.Conn
+	AssociatedAddress [protocol.PublicKeyLength]byte
 }
 
 func (cn *Connection) PerformHandshake() error {

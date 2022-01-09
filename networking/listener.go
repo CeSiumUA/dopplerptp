@@ -4,7 +4,6 @@ import (
 	"dopplerptp/settings"
 	"fmt"
 	"net"
-	"sync"
 )
 
 func StartListener() error {
@@ -18,17 +17,16 @@ func StartListener() error {
 }
 
 func listenConnections(listener *net.Listener) {
-	var mutex sync.Mutex
 	for {
 		conn, err := (*listener).Accept()
 		if err != nil {
 			continue
 		}
-		go acceptClient(&conn, &mutex)
+		go acceptClient(&conn)
 	}
 }
 
-func acceptClient(conn *net.Conn, mutex *sync.Mutex) {
+func acceptClient(conn *net.Conn) {
 	netConn := Connection{
 		Connection: conn,
 	}
@@ -36,7 +34,5 @@ func acceptClient(conn *net.Conn, mutex *sync.Mutex) {
 	if err != nil {
 		return
 	}
-	mutex.Lock()
-	connections = append(connections, &netConn)
-	mutex.Unlock()
+	AddConnection(&netConn)
 }

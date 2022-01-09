@@ -8,8 +8,8 @@ import (
 )
 
 const Version = 1
-const publicKeyLength = 32
-const hashLength = 64
+const PublicKeyLength = 32
+const HashLength = 64
 
 type Dotocot struct {
 	Version        byte
@@ -66,14 +66,14 @@ func (dtct *Dotocot) Deserialize(rawData []byte) error {
 	dtct.Version = rawData[0]
 	index++
 
-	dtct.Sender = rawData[index : index+publicKeyLength]
-	index += publicKeyLength
+	dtct.Sender = rawData[index : index+PublicKeyLength]
+	index += PublicKeyLength
 
-	dtct.TargetConsumer = rawData[index : index+publicKeyLength]
-	index += publicKeyLength
+	dtct.TargetConsumer = rawData[index : index+PublicKeyLength]
+	index += PublicKeyLength
 
-	dtct.Hash = rawData[index : index+hashLength]
-	index += hashLength
+	dtct.Hash = rawData[index : index+HashLength]
+	index += HashLength
 
 	dtct.PayloadType = rawData[index]
 	index++
@@ -108,7 +108,7 @@ func (dtct *Dotocot) Deserialize(rawData []byte) error {
 }
 
 func (dtct *Dotocot) Verify(rawData []byte) bool {
-	minimalPackageLength := 1 + (2 * publicKeyLength) + (hashLength) + 1 + 1 + 1
+	minimalPackageLength := 1 + (2 * PublicKeyLength) + (HashLength) + 1 + 1 + 1
 	atualPackageLength := len(rawData)
 	return atualPackageLength >= minimalPackageLength
 }
@@ -139,16 +139,16 @@ func CreateDotocotHandshakeMessage(sender []byte, address string) *Dotocot {
 	payload := []byte(address)
 	payloadLength := len(payload)
 
-	targetConsumer := make([]byte, publicKeyLength)
+	targetConsumer := make([]byte, PublicKeyLength)
 	payloadType := HANDSHAKE
 
-	bytesToHash := make([]byte, 2*publicKeyLength+payloadLength+1)
+	bytesToHash := make([]byte, 2*PublicKeyLength+payloadLength+1)
 
 	index := 0
-	copy(bytesToHash[index:publicKeyLength], sender)
-	index += publicKeyLength
-	copy(bytesToHash[index:publicKeyLength], targetConsumer)
-	index += publicKeyLength
+	copy(bytesToHash[index:PublicKeyLength], sender)
+	index += PublicKeyLength
+	copy(bytesToHash[index:PublicKeyLength], targetConsumer)
+	index += PublicKeyLength
 	copy(bytesToHash[index:payloadLength], payload)
 	index += payloadLength
 	copy(bytesToHash[index:1], []byte{payloadType})

@@ -4,17 +4,15 @@ import (
 	"dopplerptp/settings"
 	"fmt"
 	"net"
-	"sync"
 )
 
 func ExploreAddresses(addresses []string) {
-	var mutex sync.Mutex
 	for _, addr := range addresses {
-		go exploreDotocotPackage(addr, &mutex)
+		go exploreDotocotPackage(addr)
 	}
 }
 
-func exploreDotocotPackage(address string, mutex *sync.Mutex) {
+func exploreDotocotPackage(address string) {
 	address = fmt.Sprintf("%s:%d", address, settings.GetDefaultPort())
 	conn, err := net.Dial("tcp", address)
 	if err != nil {
@@ -30,8 +28,5 @@ func exploreDotocotPackage(address string, mutex *sync.Mutex) {
 	if err != nil {
 		return
 	}
-
-	mutex.Lock()
-	connections = append(connections, &dotocotConnection)
-	mutex.Unlock()
+	AddConnection(&dotocotConnection)
 }
