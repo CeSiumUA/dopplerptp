@@ -1,8 +1,6 @@
 package networking
 
 import (
-	"bytes"
-	"dopplerptp/protocol"
 	"dopplerptp/settings"
 	"fmt"
 	"net"
@@ -23,36 +21,17 @@ func exploreDotocotPackage(address string, mutex *sync.Mutex) {
 		return
 	}
 
-	handshakeRequest := protocol.CreateDotocotHandshakeMessage(settings.GetSender(), address)
-	serializedMessage := handshakeRequest.Serialize()
-
-	_, err = conn.Write(*serializedMessage)
-	if err != nil {
-		conn.Close()
-		return
-	}
-
-	readBuffer := make([]byte, 8192)
-	read, err := conn.Read(readBuffer)
-	if err != nil {
-		conn.Close()
-		return
-	}
-	readBuffer = readBuffer[0:read]
-	dotocotMessage := protocol.Dotocot{}
-	err = dotocotMessage.Deserialize(readBuffer)
-	if err != nil {
-		conn.Close()
-		return
-	}
-	if dotocotMessage.PayloadType != protocol.HANDSHAKE || !bytes.Equal(dotocotMessage.TargetConsumer, settings.GetSender()) {
-		conn.Close()
-		return
-	}
-	mutex.Lock()
 	dotocotConnection := Connection{
 		Connection: &conn,
 	}
+
+	err = dotocotConnection.PerformHandshake()
+
+	if err != nil {
+		return
+	}
+
+	mutex.Lock()
 	connections = append(connections, &dotocotConnection)
 	mutex.Unlock()
 }

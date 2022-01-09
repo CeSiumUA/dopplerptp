@@ -1,8 +1,11 @@
 package networking
 
 import (
+	"bytes"
+	"dopplerptp/logging"
 	"dopplerptp/protocol"
 	"dopplerptp/settings"
+	"fmt"
 	"net"
 )
 
@@ -13,11 +16,31 @@ type Connection struct {
 func (cn *Connection) PerformHandshake() error {
 	address := (*cn.Connection).RemoteAddr().String()
 	dotocotHandshake := protocol.CreateDotocotHandshakeMessage(settings.GetSender(), address)
-	bytes := dotocotHandshake.Serialize()
-	_, err := (*cn.Connection).Write(*bytes)
+	serializedBytes := dotocotHandshake.Serialize()
+	wroteBytes, err := (*cn.Connection).Write(*serializedBytes)
+	logging.GlobalLogger.LogInfo("wrote %d bytes to network channel %s", wroteBytes, (*cn.Connection).RemoteAddr().String())
 	if err != nil {
 		return err
 	}
+	readBuffer := make([]byte, 8192)
+	read, err := (*cn.Connection).Read(readBuffer)
+	logging.GlobalLogger.LogInfo("read %d bytes from network channel %s", read, (*cn.Connection).RemoteAddr().String())
+	if err != nil {
+		return err
+	}
+	readBuffer = readBuffer[0:read]
+	dotocotMessage := protocol.Dotocot{}
+	err = dotocotMessage.Deserialize(readBuffer)
+	if err != nil {
+		return err
+	}
+	if dotocotMessage.PayloadType != protocol.HANDSHAKE || !bytes.Equal(dotocotMessage.TargetConsumer, settings.GetSender()) {
+		return fmt.Errorf("incorrect handshake")
+	}
+	return err
+}
+
+func (cn *Connection) AcceptHandshake() error {
 	readBuffer := make([]byte, 8192)
 	read, err := (*cn.Connection).Read(readBuffer)
 	if err != nil {
@@ -26,5 +49,15 @@ func (cn *Connection) PerformHandshake() error {
 	readBuffer = readBuffer[0:read]
 	dotocotMessage := protocol.Dotocot{}
 	err = dotocotMessage.Deserialize(readBuffer)
+	if err != nil {
+		return err
+	}
+	if dotocotMessage.PayloadType != protocol.HANDSHAKE || !bytes.Equal(dotocotMessage.TargetConsumer, settings.GetSender()) {
+		return fmt.Errorf("incorrect handshake")
+	}
+	address := (*cn.Connection).RemoteAddr().String()
+	dotocotHandshake := protocol.CreateDotocotHandshakeMessage(settings.GetSender(), address)
+	serializedBytes := dotocotHandshake.Serialize()
+	_, err = (*cn.Connection).Write(*serializedBytes)
 	return err
 }
