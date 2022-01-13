@@ -109,8 +109,8 @@ func (dtct *Dotocot) Deserialize(rawData []byte) error {
 
 func (dtct *Dotocot) Verify(rawData []byte) bool {
 	minimalPackageLength := 1 + (2 * PublicKeyLength) + (HashLength) + 1 + 1 + 1
-	atualPackageLength := len(rawData)
-	return atualPackageLength >= minimalPackageLength
+	actualPackageLength := len(rawData)
+	return actualPackageLength >= minimalPackageLength
 }
 
 func CreateDotocotProtocolMessage(sender, targetConsumer, payload []byte, payloadType byte) *Dotocot {
