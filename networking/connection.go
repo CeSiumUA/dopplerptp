@@ -17,7 +17,7 @@ type Connection struct {
 
 func (cn *Connection) PerformHandshake() error {
 	address := (*cn.Connection).RemoteAddr().String()
-	dotocotHandshake := protocol.CreateDotocotHandshakeMessage(settings.GetSender(), address)
+	dotocotHandshake := protocol.CreateDotocotHandshakeMessage(settings.NetworkingSettings.GetSender(), address)
 	serializedBytes := dotocotHandshake.Serialize()
 	wroteBytes, err := (*cn.Connection).Write(*serializedBytes)
 	logging.GlobalLogger.LogInfo("wrote %d bytes to network channel %s", wroteBytes, (*cn.Connection).RemoteAddr().String())
@@ -36,7 +36,7 @@ func (cn *Connection) PerformHandshake() error {
 	if err != nil {
 		return err
 	}
-	if dotocotMessage.PayloadType != protocol.HANDSHAKE || !bytes.Equal(dotocotMessage.TargetConsumer, settings.GetSender()) {
+	if dotocotMessage.PayloadType != protocol.HANDSHAKE || !bytes.Equal(dotocotMessage.TargetConsumer, settings.NetworkingSettings.GetSender()) {
 		return fmt.Errorf("incorrect handshake")
 	}
 	return err
@@ -54,11 +54,11 @@ func (cn *Connection) AcceptHandshake() error {
 	if err != nil {
 		return err
 	}
-	if dotocotMessage.PayloadType != protocol.HANDSHAKE || !bytes.Equal(dotocotMessage.TargetConsumer, settings.GetSender()) {
+	if dotocotMessage.PayloadType != protocol.HANDSHAKE || !bytes.Equal(dotocotMessage.TargetConsumer, settings.NetworkingSettings.GetSender()) {
 		return fmt.Errorf("incorrect handshake")
 	}
 	address := (*cn.Connection).RemoteAddr().String()
-	dotocotHandshake := protocol.CreateDotocotHandshakeMessage(settings.GetSender(), address)
+	dotocotHandshake := protocol.CreateDotocotHandshakeMessage(settings.NetworkingSettings.GetSender(), address)
 	serializedBytes := dotocotHandshake.Serialize()
 	_, err = (*cn.Connection).Write(*serializedBytes)
 	return err

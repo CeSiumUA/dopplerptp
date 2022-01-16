@@ -8,7 +8,7 @@ import (
 )
 
 func StartListener() error {
-	localAddress := fmt.Sprintf("0.0.0.0:%d", settings.GetDefaultPort())
+	localAddress := fmt.Sprintf("0.0.0.0:%d", settings.NetworkingSettings.GetDefaultPort())
 	listener, err := net.Listen("tcp", localAddress)
 	if err != nil {
 		return err

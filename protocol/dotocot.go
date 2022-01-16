@@ -130,7 +130,7 @@ func isPackageLengthValid(rawData []byte) bool {
 }
 
 func verifySignature(rawData []byte) bool {
-	verifyFunction := settings.GetVerifyFunction()
+	verifyFunction := settings.NetworkingSettings.GetVerifyFunction()
 	return verifyFunction(rawData)
 }
 
@@ -148,7 +148,7 @@ func CreateDotocotProtocolMessage(sender, targetConsumer, payload []byte, payloa
 	hasher512.Write(hashedBytes)
 	hash := hasher512.Sum(nil)
 
-	signatureFunction := settings.GetSigningFunction()
+	signatureFunction := settings.NetworkingSettings.GetSigningFunction()
 	signature := signatureFunction(hash)
 
 	dotocot := Dotocot{

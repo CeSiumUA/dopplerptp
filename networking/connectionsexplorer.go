@@ -14,7 +14,7 @@ func ExploreAddresses(addresses []string) {
 }
 
 func exploreDotocotPackage(address string) {
-	address = fmt.Sprintf("%s:%d", address, settings.GetDefaultPort())
+	address = fmt.Sprintf("%s:%d", address, settings.NetworkingSettings.GetDefaultPort())
 	conn, err := net.Dial("tcp", address)
 	if err != nil {
 		return
