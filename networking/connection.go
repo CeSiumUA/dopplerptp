@@ -2,11 +2,12 @@ package networking
 
 import (
 	"bytes"
-	"dopplerptp/logging"
-	"dopplerptp/protocol"
-	"dopplerptp/settings"
 	"fmt"
 	"net"
+
+	"github.com/CeSiumUA/dopplerptp/logging"
+	"github.com/CeSiumUA/dopplerptp/protocol"
+	"github.com/CeSiumUA/dopplerptp/settings"
 )
 
 type Connection struct {

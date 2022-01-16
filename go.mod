@@ -1,4 +1,4 @@
-module dopplerptp
+module github.com/CeSiumUA/dopplerptp
 
 go 1.17
 

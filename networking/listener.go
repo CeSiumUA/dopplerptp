@@ -1,9 +1,10 @@
 package networking
 
 import (
-	"dopplerptp/settings"
 	"fmt"
 	"net"
+
+	"github.com/CeSiumUA/dopplerptp/settings"
 )
 
 func StartListener() error {

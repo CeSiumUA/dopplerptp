@@ -3,9 +3,10 @@ package protocol
 import (
 	"bytes"
 	"crypto/sha512"
-	"dopplerptp/settings"
 	"encoding/binary"
 	"fmt"
+
+	"github.com/CeSiumUA/dopplerptp/settings"
 )
 
 const Version = 1
