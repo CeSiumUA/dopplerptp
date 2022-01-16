@@ -4,7 +4,7 @@ import "sync"
 
 var connections []*Connection
 
-var mutex sync.Mutex
+var mutex sync.Mutex = sync.Mutex{}
 
 func AddConnection(cn *Connection) {
 

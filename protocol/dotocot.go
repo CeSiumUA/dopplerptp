@@ -3,6 +3,7 @@ package protocol
 import (
 	"bytes"
 	"crypto/sha512"
+	"dopplerptp/settings"
 	"encoding/binary"
 	"fmt"
 )
@@ -10,6 +11,7 @@ import (
 const Version = 1
 const PublicKeyLength = 32
 const HashLength = 64
+const SignarureLength = 32
 
 type Dotocot struct {
 	Version        byte
@@ -19,16 +21,22 @@ type Dotocot struct {
 	PayloadType    byte
 	PayloadLength  uint64
 	Payload        []byte
+	Signature      []byte
 }
 
 func (dtct *Dotocot) Serialize() *[]byte {
 	longBuff := make([]byte, 8)
 	binary.PutUvarint(longBuff, dtct.PayloadLength)
-	totalLength := 1 + len(dtct.Sender) + len(dtct.TargetConsumer) + len(dtct.Hash) + 1 + len(longBuff) + len(dtct.Payload)
+	totalLength := 1 + len(dtct.Sender) + len(dtct.TargetConsumer) + len(dtct.Hash) + 1 + len(longBuff) + len(dtct.Payload) + SignarureLength
 	resultBytes := make([]byte, totalLength)
 	index := 0
 	resultBytes[0] = dtct.Version
 	index++
+
+	signatureFunction := settings.GetSigningFunction()
+	signature := signatureFunction(dtct.Hash)
+	copy(resultBytes[index:index+SignarureLength], signature)
+	index += SignarureLength
 
 	senderLength := len(dtct.Sender)
 	copy(resultBytes[index:index+senderLength], dtct.Sender)
@@ -50,13 +58,14 @@ func (dtct *Dotocot) Serialize() *[]byte {
 
 	payLoadLength := len(dtct.Payload)
 	copy(resultBytes[index:index+payLoadLength], dtct.Payload)
+	index += payLoadLength
 
 	return &resultBytes
 }
 
 func (dtct *Dotocot) Deserialize(rawData []byte) error {
 
-	isPackageValid := dtct.Verify(rawData)
+	isPackageValid := isPackageLengthValid(rawData)
 
 	if !isPackageValid {
 		return fmt.Errorf("package is not valid")
@@ -65,6 +74,9 @@ func (dtct *Dotocot) Deserialize(rawData []byte) error {
 	index := 0
 	dtct.Version = rawData[0]
 	index++
+
+	dtct.Signature = rawData[index : index+SignarureLength]
+	index += SignarureLength
 
 	dtct.Sender = rawData[index : index+PublicKeyLength]
 	index += PublicKeyLength
@@ -104,13 +116,26 @@ func (dtct *Dotocot) Deserialize(rawData []byte) error {
 		return fmt.Errorf("hash is not valid")
 	}
 
+	if !dtct.Verify() {
+		return fmt.Errorf("signature verification failed")
+	}
+
 	return nil
 }
 
-func (dtct *Dotocot) Verify(rawData []byte) bool {
+func isPackageLengthValid(rawData []byte) bool {
 	minimalPackageLength := 1 + (2 * PublicKeyLength) + (HashLength) + 1 + 1 + 1
 	actualPackageLength := len(rawData)
 	return actualPackageLength >= minimalPackageLength
+}
+
+func verifySignature(rawData []byte) bool {
+	verifyFunction := settings.GetVerifyFunction()
+	return verifyFunction(rawData)
+}
+
+func (dtct *Dotocot) Verify() bool {
+	return verifySignature(dtct.Signature)
 }
 
 func CreateDotocotProtocolMessage(sender, targetConsumer, payload []byte, payloadType byte) *Dotocot {

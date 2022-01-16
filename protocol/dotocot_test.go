@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-var basePackageSize int32 = 138
+var basePackageSize int32 = 170
 
 func TestSerializeDeserialize(t *testing.T) {
 
@@ -25,7 +25,11 @@ func TestSerializeDeserialize(t *testing.T) {
 	}
 
 	deserialized := Dotocot{}
-	deserialized.Deserialize(*serializedBytes)
+	err := deserialized.Deserialize(*serializedBytes)
+
+	if err != nil {
+		t.Error(err)
+	}
 
 	if deserialized.Version != dotocotMessage.Version {
 		t.Errorf("incorrect protocol version, expected %d got %d", dotocotMessage.Version, deserialized.Version)
@@ -51,11 +55,6 @@ func TestSerializeDeserialize(t *testing.T) {
 func TestVerify(t *testing.T) {
 	dtct := Dotocot{}
 	rawBytes := make([]byte, 100)
-	isValid := dtct.Verify(rawBytes)
-
-	if isValid {
-		t.Errorf("in this test case, package is invalid")
-	}
 
 	err := dtct.Deserialize(rawBytes)
 	if err == nil {
