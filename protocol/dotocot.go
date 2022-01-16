@@ -33,9 +33,7 @@ func (dtct *Dotocot) Serialize() *[]byte {
 	resultBytes[0] = dtct.Version
 	index++
 
-	signatureFunction := settings.GetSigningFunction()
-	signature := signatureFunction(dtct.Hash)
-	copy(resultBytes[index:index+SignarureLength], signature)
+	copy(resultBytes[index:index+SignarureLength], dtct.Signature)
 	index += SignarureLength
 
 	senderLength := len(dtct.Sender)
@@ -101,7 +99,8 @@ func (dtct *Dotocot) Deserialize(rawData []byte) error {
 
 	dtct.Payload = rawData[index:]
 
-	hashedBytes := dtct.Sender
+	hashedBytes := make([]byte, 0)
+	hashedBytes = append(hashedBytes, dtct.Sender...)
 	hashedBytes = append(hashedBytes, dtct.TargetConsumer...)
 	hashedBytes = append(hashedBytes, dtct.Payload...)
 	hashedBytes = append(hashedBytes, dtct.PayloadType)
@@ -148,6 +147,9 @@ func CreateDotocotProtocolMessage(sender, targetConsumer, payload []byte, payloa
 	hasher512.Write(hashedBytes)
 	hash := hasher512.Sum(nil)
 
+	signatureFunction := settings.GetSigningFunction()
+	signature := signatureFunction(hash)
+
 	dotocot := Dotocot{
 		Version:        Version,
 		Sender:         sender,
@@ -156,6 +158,7 @@ func CreateDotocotProtocolMessage(sender, targetConsumer, payload []byte, payloa
 		Payload:        payload,
 		PayloadType:    payloadType,
 		Hash:           hash,
+		Signature:      signature,
 	}
 	return &dotocot
 }

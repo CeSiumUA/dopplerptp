@@ -1,7 +1,6 @@
 package protocol
 
 import (
-	"crypto/sha512"
 	"math/rand"
 	"testing"
 )
@@ -81,24 +80,6 @@ func createDotocotPackage(payloadLength int32) *Dotocot {
 	sender := []byte{1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4, 1, 2, 3, 4}
 	consumer := []byte{5, 6, 7, 8, 5, 6, 7, 8, 5, 6, 7, 8, 5, 6, 7, 8, 5, 6, 7, 8, 5, 6, 7, 8, 5, 6, 7, 8, 5, 6, 7, 8}
 	payload := make([]byte, payloadLength)
-	rand.Read(payload)
-	resultArray := append(sender, consumer...)
-	resultArray = append(resultArray, payload...)
 
-	hasher := sha512.New()
-
-	hasher.Write(resultArray)
-
-	hash := hasher.Sum(nil)
-
-	dotocotMessage := Dotocot{
-		Version:        Version,
-		Sender:         sender,
-		TargetConsumer: consumer,
-		PayloadType:    1,
-		Payload:        payload,
-		Hash:           hash,
-		PayloadLength:  4,
-	}
-	return &dotocotMessage
+	return CreateDotocotProtocolMessage(sender, consumer, payload, 1)
 }
