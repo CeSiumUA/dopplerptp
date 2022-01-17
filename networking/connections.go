@@ -1,6 +1,9 @@
 package networking
 
-import "sync"
+import (
+	"fmt"
+	"sync"
+)
 
 var connections []*Connection
 
@@ -10,5 +13,6 @@ func AddConnection(cn *Connection) {
 
 	mutex.Lock()
 	connections = append(connections, cn)
+	fmt.Printf("Added new connection: %s\n", (*cn.Connection).RemoteAddr())
 	mutex.Unlock()
 }
