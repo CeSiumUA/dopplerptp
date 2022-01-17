@@ -174,11 +174,11 @@ func CreateDotocotHandshakeMessage(sender []byte, address string) *Dotocot {
 	bytesToHash := make([]byte, 2*PublicKeyLength+payloadLength+1)
 
 	index := 0
-	copy(bytesToHash[index:PublicKeyLength], sender)
+	copy(bytesToHash[index:index+PublicKeyLength], sender)
 	index += PublicKeyLength
-	copy(bytesToHash[index:PublicKeyLength], targetConsumer)
+	copy(bytesToHash[index:index+PublicKeyLength], targetConsumer)
 	index += PublicKeyLength
-	copy(bytesToHash[index:payloadLength], payload)
+	copy(bytesToHash[index:index+payloadLength], payload)
 	index += payloadLength
 	copy(bytesToHash[index:1], []byte{payloadType})
 
