@@ -180,7 +180,7 @@ func CreateDotocotHandshakeMessage(sender []byte, address string) *Dotocot {
 	index += PublicKeyLength
 	copy(bytesToHash[index:index+payloadLength], payload)
 	index += payloadLength
-	copy(bytesToHash[index:1], []byte{payloadType})
+	copy(bytesToHash[index:index+1], []byte{payloadType})
 
 	hasher512 := sha512.New()
 	hasher512.Write(bytesToHash)
